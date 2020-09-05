@@ -1,77 +1,32 @@
-# rust-dap - declarative argument parser
+# rust-yap - yet another (argument) parser
 
-rust-dap ~~is~~ *will be* (for now its work in progress) declarative argument parser
+If you came here looking for argument parser,
+turn back and use https://github.com/clap-rs/clap
+which is working, reliable solution.
 
-The idea is to have declarative definition of your arguments,
-from which Rust code will be generated.
+I created yap because I am very opinionated about how arguments should be parsed,
+and to experiment with new features clap is missing.
 
-rust-dap uses power of lalrpop to parse argument definition file
-and is capable of handling program arguments without adding unnecessary complexity to your code
-(by moving it to your build process).
+Most notable one is command chain.
 
-I created it because structopt was generating hard to read code,
-was missing certain features and was cumbersome to use for more complex cases.
-
-Rust-dap should handle almost anything you throw at it.
-
-For example this declaration:
-
-```python
-verbose = BooleanFlag(
-    name = 'verbose',
-    default_value = true,
-    short = 'v',
-    long  = 'verbose',
-    help  = 'Be verbose',
-)
-
-program_options = Options(flags=[verbose])
-
-
-order_command = Command(
-    name = 'order'
-)
-
-status_argument = Argument(
-    type = String,
-    amount = 1
-)
-
-status_command = Command(
-    name = 'status',
-    arguments = [status_argument]
-)
-
-
-order_cmdline = CmdLine(
-    syntax = 'program_options order_command items=String*'
-)
-
-order_status_cmdline = CmdLine(
-    syntax = 'program_options status_command'
-)
-
-
-main = EnumCmdLine(
-    enums = [order_cmdline, order_status_cmdline]
-)
+Let say you have a program that processes data from multiple sources,
+and each source can take verious options.
+For example let say we can download data from internet or read local file,
+and those sources are expressed as commands:
 
 ```
-will generate rust parser that can handle following invocations:
-
-```bash
-    ./food order pizza ravioli
-    ./food status order1 
+source = 
+    file PATH
+    web [OPTIONS] URL
 ```
 
-while all you need to do in your code will be to implement relevant functions:
-
-```rust
-
-    pub fn handle_order_cmdline(program_options, order_command, items) {...}
-    pub fn handle_order_status_cmdline(program_options, status_command) {...}
+and we want to accept multiple sources:
 
 ```
+import file /some/file file /some/other/file web http://somesite.com
+```
 
+Clap doesn't support that, I needed this, so I wrote my own parser.
 
-
+This is work in progress, and its not even aimed at being as mature as clap,
+but it will do what I need.
