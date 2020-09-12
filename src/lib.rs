@@ -14,26 +14,27 @@ use std::convert::From;
 
 #[macro_use]
 extern crate derivative;
-use indexmap::{IndexMap, IndexSet, map::Entry};
+use indexmap::{map::Entry, IndexMap, IndexSet};
 
 mod parser;
 
 #[macro_use]
 extern crate derive_builder;
 
-
 type ValueValidator = fn(&str) -> Result<(), String>;
 type MultiValueValidator = fn(&Vec<String>) -> Result<(), String>;
 type SubCommandValidator = fn(&SubCommandDef) -> Result<(), String>;
 type AppValidator = fn(&App) -> Result<(), String>;
 
-
 #[derive(Clone, Default)]
 pub struct ArgumentDefs(pub Vec<ArgumentDef>);
 
 impl ArgumentDefs {
-
-    pub fn validate(&self, single_value_arguments: &IndexMap<String, String>, multi_value_arguments: &IndexMap<String, Vec<String>>) -> Result<(), String> {
+    pub fn validate(
+        &self,
+        single_value_arguments: &IndexMap<String, String>,
+        multi_value_arguments: &IndexMap<String, Vec<String>>,
+    ) -> Result<(), String> {
         for argument_def in &self.0 {
             argument_def.validate(&single_value_arguments, &multi_value_arguments)?
         }
@@ -41,12 +42,10 @@ impl ArgumentDefs {
     }
 }
 
-
 #[derive(Clone, Default)]
 pub struct FlagDefs(pub Vec<FlagDef>);
 
 impl FlagDefs {
-
     pub fn add_flag(&mut self, flag_def: FlagDef) -> &mut Self {
         self.0.push(flag_def);
         self
@@ -55,17 +54,20 @@ impl FlagDefs {
     pub fn by_short(&self, ch: &char) -> Option<&FlagDef> {
         for fd in &self.0 {
             match fd {
-                FlagDef::BooleanFlagDef(ref bfd) => if let Some(v) = bfd.short {
-                    if  v == *ch {
-                        return Some(&fd);
+                FlagDef::BooleanFlagDef(ref bfd) => {
+                    if let Some(v) = bfd.short {
+                        if v == *ch {
+                            return Some(&fd);
+                        }
                     }
-                },
-                FlagDef::CountedFlagDef(ref cfd) => if let Some(v) = cfd.short {
-                    if  v == *ch {
-                        return Some(&fd);
+                }
+                FlagDef::CountedFlagDef(ref cfd) => {
+                    if let Some(v) = cfd.short {
+                        if v == *ch {
+                            return Some(&fd);
+                        }
                     }
-                },
-
+                }
             }
         }
         None
@@ -74,23 +76,30 @@ impl FlagDefs {
     pub fn by_long(&self, param: &str) -> Option<&FlagDef> {
         for fd in &self.0 {
             match fd {
-                FlagDef::BooleanFlagDef(ref bfd) => if let Some(v) = &bfd.long {
-                    if  v == param {
-                        return Some(&fd);
+                FlagDef::BooleanFlagDef(ref bfd) => {
+                    if let Some(v) = &bfd.long {
+                        if v == param {
+                            return Some(&fd);
+                        }
                     }
-                },
-                FlagDef::CountedFlagDef(ref cfd) => if let Some(v) = &cfd.long {
-                    if  v == param {
-                        return Some(&fd);
+                }
+                FlagDef::CountedFlagDef(ref cfd) => {
+                    if let Some(v) = &cfd.long {
+                        if v == param {
+                            return Some(&fd);
+                        }
                     }
-                },
-
+                }
             }
         }
         None
     }
 
-    pub fn validate(&self, boolean_flags: &IndexMap<String, bool>, counted_flags: &IndexMap<String, u64>) -> Result<(), String> {
+    pub fn validate(
+        &self,
+        boolean_flags: &IndexMap<String, bool>,
+        counted_flags: &IndexMap<String, u64>,
+    ) -> Result<(), String> {
         for flag_def in &self.0 {
             flag_def.validate(&boolean_flags, &counted_flags)?
         }
@@ -102,7 +111,6 @@ impl FlagDefs {
 pub struct OptionDefs(pub Vec<OptionDef>);
 
 impl OptionDefs {
-
     pub fn by_name(&self, name: &str) -> Option<&OptionDef> {
         for item in &self.0 {
             match item {
@@ -110,12 +118,12 @@ impl OptionDefs {
                     if svod.name == name {
                         return Some(&item);
                     }
-                },
+                }
                 OptionDef::MultiValue(mvod) => {
                     if mvod.name == name {
                         return Some(&item);
                     }
-                },
+                }
             }
         }
         None
@@ -124,17 +132,20 @@ impl OptionDefs {
     pub fn by_short(&self, ch: &char) -> Option<&OptionDef> {
         for od in &self.0 {
             match od {
-                OptionDef::SingleValue(ref svod) => if let Some(v) = svod.short {
-                    if  v == *ch {
-                        return Some(&od);
+                OptionDef::SingleValue(ref svod) => {
+                    if let Some(v) = svod.short {
+                        if v == *ch {
+                            return Some(&od);
+                        }
                     }
-                },
-                OptionDef::MultiValue(ref mvod) => if let Some(v) = mvod.short {
-                    if  v == *ch {
-                        return Some(&od);
+                }
+                OptionDef::MultiValue(ref mvod) => {
+                    if let Some(v) = mvod.short {
+                        if v == *ch {
+                            return Some(&od);
+                        }
                     }
-                },
-
+                }
             }
         }
         None
@@ -143,31 +154,36 @@ impl OptionDefs {
     pub fn by_long(&self, param: &str) -> Option<&OptionDef> {
         for od in &self.0 {
             match od {
-                OptionDef::SingleValue(ref svod) => if let Some(v) = &svod.long {
-                    if  v == param {
-                        return Some(&od);
+                OptionDef::SingleValue(ref svod) => {
+                    if let Some(v) = &svod.long {
+                        if v == param {
+                            return Some(&od);
+                        }
                     }
-                },
-                OptionDef::MultiValue(ref mvod) => if let Some(v) = &mvod.long {
-                    if  v == param {
-                        return Some(&od);
+                }
+                OptionDef::MultiValue(ref mvod) => {
+                    if let Some(v) = &mvod.long {
+                        if v == param {
+                            return Some(&od);
+                        }
                     }
-                },
-
+                }
             }
         }
         None
     }
 
-
-    pub fn validate(&self, single_value_options: &IndexMap<String, String>, multi_value_options: &IndexMap<String, Vec<String>>) -> Result<(), String> {
+    pub fn validate(
+        &self,
+        single_value_options: &IndexMap<String, String>,
+        multi_value_options: &IndexMap<String, Vec<String>>,
+    ) -> Result<(), String> {
         for option_def in &self.0 {
             option_def.validate(&single_value_options, &multi_value_options)?
         }
         Ok(())
     }
 }
-
 
 #[derive(Builder, Clone)]
 pub struct Group {
@@ -183,13 +199,15 @@ impl Group {
         Group {
             name,
             help,
-            items: None
+            items: None,
         }
     }
 
     pub fn add_item(&mut self, item: &str) {
         match &mut self.items {
-            Some(is) => { is.insert(item.to_string()); },
+            Some(is) => {
+                is.insert(item.to_string());
+            }
             None => {
                 let mut is = IndexSet::new();
                 is.insert(item.to_string());
@@ -198,7 +216,6 @@ impl Group {
         }
     }
 }
-
 
 #[derive(Builder, Clone)]
 pub struct BooleanFlagDef {
@@ -218,9 +235,9 @@ impl BooleanFlagDef {
         FlagDef::BooleanFlagDef(self)
     }
 
-    pub fn validate(&self, boolean_flags: &IndexMap<String, bool>) ->  Result<(), String> {
+    pub fn validate(&self, boolean_flags: &IndexMap<String, bool>) -> Result<(), String> {
         if self.required && !boolean_flags.contains_key(&self.name) {
-            return Err(format!("flag {} is required", self.name))
+            return Err(format!("flag {} is required", self.name));
         }
         Ok(())
     }
@@ -229,13 +246,10 @@ impl BooleanFlagDef {
 impl BooleanFlagDefBuilder {
     pub fn new(name: String, short: Option<char>, long: Option<String>) -> BooleanFlagDefBuilder {
         let mut bfdb = BooleanFlagDefBuilder::default();
-        bfdb.name(name)
-            .short(short)
-            .long(long);
+        bfdb.name(name).short(short).long(long);
         bfdb
     }
 }
-
 
 #[derive(Builder, Clone)]
 #[builder(build_fn(validate = "Self::validate_def"))]
@@ -258,49 +272,57 @@ impl CountedFlagDef {
         FlagDef::CountedFlagDef(self)
     }
 
-    pub fn validate(&self, counted_flags: &IndexMap<String, u64>) ->  Result<(), String> {
+    pub fn validate(&self, counted_flags: &IndexMap<String, u64>) -> Result<(), String> {
         let cnt = match counted_flags.get(&self.name) {
             Some(v) => *v,
             None => 0,
         };
         if cnt < self.min_occurences {
-            return Err(format!("flag {} must appear at least {} time(s), it appeared {} time(s)", self.name, self.min_occurences, cnt));
-        
+            return Err(format!(
+                "flag {} must appear at least {} time(s), it appeared {} time(s)",
+                self.name, self.min_occurences, cnt
+            ));
         };
         if let Some(mx) = self.max_occurences {
             if cnt > mx {
-                return Err(format!("flag {} may appear at most {} time(s), it appeared {} time(s)", self.name, self.min_occurences, cnt));
+                return Err(format!(
+                    "flag {} may appear at most {} time(s), it appeared {} time(s)",
+                    self.name, self.min_occurences, cnt
+                ));
             }
         }
         Ok(())
-
     }
-
-
 }
 
 impl CountedFlagDefBuilder {
-
     pub fn new(name: String, short: Option<char>, long: Option<String>) -> CountedFlagDefBuilder {
         let mut cfdb = CountedFlagDefBuilder::default();
-        cfdb.name(name)
-            .short(short)
-            .long(long);
+        cfdb.name(name).short(short).long(long);
         cfdb
     }
 
     fn validate_def(&self) -> Result<(), String> {
         if let (None, None) = (&self.short, &self.long) {
-            return Err(format!("{:?}: either short or long name must be provided", self.name))
+            return Err(format!(
+                "{:?}: either short or long name must be provided",
+                self.name
+            ));
         };
 
         if self.min_occurences == Some(0) && self.max_occurences == Some(Some(0)) {
-            return Err(format!("{:?}: min/max_occurences cannot be both set to 0", self.name))
+            return Err(format!(
+                "{:?}: min/max_occurences cannot be both set to 0",
+                self.name
+            ));
         }
 
         if let (Some(v1), Some(Some(v2))) = (self.min_occurences, self.max_occurences) {
             if v1 > v2 {
-                return Err(format!("{:?}: min_occurences must not exceed max_occurences", self.name))
+                return Err(format!(
+                    "{:?}: min_occurences must not exceed max_occurences",
+                    self.name
+                ));
             }
         }
 
@@ -311,18 +333,20 @@ impl CountedFlagDefBuilder {
 #[derive(Clone)]
 pub enum FlagDef {
     BooleanFlagDef(BooleanFlagDef),
-    CountedFlagDef(CountedFlagDef)
+    CountedFlagDef(CountedFlagDef),
 }
 
 impl FlagDef {
-    pub fn validate(&self, boolean_flags: &IndexMap<String, bool>, counted_flags: &IndexMap<String, u64>) -> Result<(), String> {
+    pub fn validate(
+        &self,
+        boolean_flags: &IndexMap<String, bool>,
+        counted_flags: &IndexMap<String, u64>,
+    ) -> Result<(), String> {
         match self {
             FlagDef::BooleanFlagDef(bfd) => bfd.validate(&boolean_flags),
-            FlagDef::CountedFlagDef(cfd) => cfd.validate(&counted_flags)
+            FlagDef::CountedFlagDef(cfd) => cfd.validate(&counted_flags),
         }
     }
-
-
 }
 
 impl From<BooleanFlagDef> for FlagDef {
@@ -350,12 +374,11 @@ pub struct SingleValueOptionDef {
     #[builder(default = "false")]
     required: bool,
     #[builder(default = "vec![]")]
-    #[derivative(Debug="ignore")]
+    #[derivative(Debug = "ignore")]
     validators: Vec<ValueValidator>,
 }
 
 impl SingleValueOptionDef {
-
     pub fn get_help(&self) -> String {
         let mut s: String = String::new();
         s.push_str("    ");
@@ -363,7 +386,10 @@ impl SingleValueOptionDef {
             (Some(short), None) => s.push_str(&format!("-{}", short)),
             (None, Some(long)) => s.push_str(&format!("--{}", long)),
             (Some(short), Some(long)) => s.push_str(&format!("-{}, --{}", short, long)),
-            (None, None) => panic!("option {} must have either short or long value provided", self.name),
+            (None, None) => panic!(
+                "option {} must have either short or long value provided",
+                self.name
+            ),
         }
         if let Some(help) = &self.help {
             s.push_str(&format!(" {}", &help));
@@ -383,17 +409,16 @@ impl SingleValueOptionDef {
         }
         Ok(())
     }
-
-
 }
 
 impl SingleValueOptionDefBuilder {
-
-    pub fn new(name: String, short: Option<char>, long: Option<String>) -> SingleValueOptionDefBuilder {
+    pub fn new(
+        name: String,
+        short: Option<char>,
+        long: Option<String>,
+    ) -> SingleValueOptionDefBuilder {
         let mut svodb = SingleValueOptionDefBuilder::default();
-        svodb.name(name)
-            .short(short)
-            .long(long);
+        svodb.name(name).short(short).long(long);
         svodb
     }
 }
@@ -413,12 +438,11 @@ pub struct MultiValueOptionDef {
     #[builder(default = "None")]
     max_occurences: Option<u64>,
     #[builder(default = "vec![]")]
-    #[derivative(Debug="ignore")]
+    #[derivative(Debug = "ignore")]
     validators: Vec<MultiValueValidator>,
 }
 
 impl MultiValueOptionDef {
-
     pub fn get_help(&self) -> String {
         let mut s: String = String::new();
         s.push_str("    ");
@@ -426,25 +450,26 @@ impl MultiValueOptionDef {
             (Some(short), None) => s.push_str(&format!("-{}", short)),
             (None, Some(long)) => s.push_str(&format!("--{}", long)),
             (Some(short), Some(long)) => s.push_str(&format!("-{}, --{}", short, long)),
-            (None, None) => panic!("option {} must have either short or long value provided", self.name),
+            (None, None) => panic!(
+                "option {} must have either short or long value provided",
+                self.name
+            ),
         }
         match &(self.min_occurences, self.max_occurences) {
-            (v1, None) => {
-                match v1 {
-                    0 => s.push_str(&format!(" [{}] [...]", self.name.to_uppercase())),
-                    _ => {
-                        for _ in 0..*v1 { 
-                            s.push_str(&format!(" {}", self.name.to_uppercase()))
-                        }
-                        s.push_str(" [...]");
+            (v1, None) => match v1 {
+                0 => s.push_str(&format!(" [{}] [...]", self.name.to_uppercase())),
+                _ => {
+                    for _ in 0..*v1 {
+                        s.push_str(&format!(" {}", self.name.to_uppercase()))
                     }
+                    s.push_str(" [...]");
                 }
             },
             (v1, Some(v2)) => {
                 for _ in 0..*v1 {
                     s.push_str(&format!(" {}", self.name.to_uppercase()))
                 }
-               
+
                 if v1 < v2 {
                     for _ in *v1..*v2 {
                         s.push_str(&format!(" [{}]", self.name.to_uppercase()))
@@ -459,7 +484,10 @@ impl MultiValueOptionDef {
         s
     }
 
-    pub fn validate(&self, multi_value_options: &IndexMap<String, Vec<String>>) -> Result<(), String> {
+    pub fn validate(
+        &self,
+        multi_value_options: &IndexMap<String, Vec<String>>,
+    ) -> Result<(), String> {
         match &multi_value_options.get(&self.name) {
             None => (),
             Some(ref values) => {
@@ -470,21 +498,19 @@ impl MultiValueOptionDef {
         }
         Ok(())
     }
-
-
 }
 
 impl MultiValueOptionDefBuilder {
-
-    pub fn new(name: String, short: Option<char>, long: Option<String>) -> MultiValueOptionDefBuilder {
+    pub fn new(
+        name: String,
+        short: Option<char>,
+        long: Option<String>,
+    ) -> MultiValueOptionDefBuilder {
         let mut mvodb = MultiValueOptionDefBuilder::default();
-        mvodb.name(name)
-            .short(short)
-            .long(long);
+        mvodb.name(name).short(short).long(long);
         mvodb
     }
 }
-
 
 #[derive(Clone, Debug)]
 pub enum OptionDef {
@@ -503,22 +529,34 @@ impl OptionDef {
     pub fn get_help(&self) -> String {
         match self {
             OptionDef::SingleValue(o) => o.get_help(),
-            OptionDef::MultiValue(o) => o.get_help()
+            OptionDef::MultiValue(o) => o.get_help(),
         }
     }
 
-    pub fn validate(&self, single_value_options: &IndexMap<String, String>, multi_value_options: &IndexMap<String, Vec<String>>) -> Result<(), String> {
+    pub fn validate(
+        &self,
+        single_value_options: &IndexMap<String, String>,
+        multi_value_options: &IndexMap<String, Vec<String>>,
+    ) -> Result<(), String> {
         match self {
             OptionDef::SingleValue(o) => o.validate(&single_value_options),
-            OptionDef::MultiValue(o) => o.validate(&multi_value_options)
+            OptionDef::MultiValue(o) => o.validate(&multi_value_options),
         }
     }
 
-    pub fn new_single_value(name: String, short: Option<char>, long: Option<String>) -> SingleValueOptionDefBuilder {
+    pub fn new_single_value(
+        name: String,
+        short: Option<char>,
+        long: Option<String>,
+    ) -> SingleValueOptionDefBuilder {
         SingleValueOptionDefBuilder::new(name, short, long)
     }
 
-    pub fn new_multi_value(name: String, short: Option<char>, long: Option<String>) -> MultiValueOptionDefBuilder {
+    pub fn new_multi_value(
+        name: String,
+        short: Option<char>,
+        long: Option<String>,
+    ) -> MultiValueOptionDefBuilder {
         MultiValueOptionDefBuilder::new(name, short, long)
     }
 }
@@ -535,7 +573,6 @@ impl From<MultiValueOptionDef> for OptionDef {
     }
 }
 
-
 #[derive(Builder, Clone, Derivative)]
 #[derivative(Debug)]
 pub struct SingleValueArgumentDef {
@@ -545,7 +582,7 @@ pub struct SingleValueArgumentDef {
     #[builder(default = "false")]
     required: bool,
     #[builder(default = "vec![]")]
-    #[derivative(Debug="ignore")]
+    #[derivative(Debug = "ignore")]
     validators: Vec<ValueValidator>,
 }
 
@@ -554,9 +591,21 @@ impl SingleValueArgumentDef {
         ArgumentDef::SingleValue(self)
     }
 
-    pub fn validate(&self, single_value_arguments: &IndexMap<String, String>) -> Result<(), String> {
+    pub fn validate(
+        &self,
+        single_value_arguments: &IndexMap<String, String>,
+    ) -> Result<(), String> {
         match &single_value_arguments.get(&self.name) {
-            None => if self.required { Err(format!("required positional argument: {} is missing", self.name)) } else { Ok(())},
+            None => {
+                if self.required {
+                    Err(format!(
+                        "required positional argument: {} is missing",
+                        self.name
+                    ))
+                } else {
+                    Ok(())
+                }
+            }
             Some(ref value) => {
                 for validator in &self.validators {
                     validator(&value)?;
@@ -568,7 +617,6 @@ impl SingleValueArgumentDef {
 }
 
 impl SingleValueArgumentDefBuilder {
-
     pub fn new(name: String) -> SingleValueArgumentDefBuilder {
         let mut svadb = SingleValueArgumentDefBuilder::default();
         svadb.name(name);
@@ -583,7 +631,7 @@ pub struct MultiValueArgumentDef {
     #[builder(default = "None")]
     help: Option<String>,
     #[builder(default = "vec![]")]
-    #[derivative(Debug="ignore")]
+    #[derivative(Debug = "ignore")]
     validators: Vec<MultiValueValidator>,
     #[builder(default = "1")]
     min_occurences: u64,
@@ -596,7 +644,10 @@ impl MultiValueArgumentDef {
         ArgumentDef::MultiValue(self)
     }
 
-    pub fn validate(&self, multi_value_arguments: &IndexMap<String, Vec<String>>) -> Result<(), String> {
+    pub fn validate(
+        &self,
+        multi_value_arguments: &IndexMap<String, Vec<String>>,
+    ) -> Result<(), String> {
         match &multi_value_arguments.get(&self.name) {
             None => (),
             Some(ref values) => {
@@ -610,14 +661,12 @@ impl MultiValueArgumentDef {
 }
 
 impl MultiValueArgumentDefBuilder {
-
     pub fn new(name: String) -> MultiValueArgumentDefBuilder {
         let mut mvadb = MultiValueArgumentDefBuilder::default();
         mvadb.name(name);
         mvadb
     }
 }
-
 
 #[derive(Clone, Debug)]
 pub enum ArgumentDef {
@@ -626,7 +675,6 @@ pub enum ArgumentDef {
 }
 
 impl ArgumentDef {
-
     pub fn new_single_value(name: String) -> SingleValueArgumentDefBuilder {
         SingleValueArgumentDefBuilder::new(name)
     }
@@ -635,14 +683,17 @@ impl ArgumentDef {
         MultiValueArgumentDefBuilder::new(name)
     }
 
-    pub fn validate(&self, single_value_arguments: &IndexMap<String, String>, multi_value_arguments: &IndexMap<String, Vec<String>>) -> Result<(), String> {
+    pub fn validate(
+        &self,
+        single_value_arguments: &IndexMap<String, String>,
+        multi_value_arguments: &IndexMap<String, Vec<String>>,
+    ) -> Result<(), String> {
         match self {
             ArgumentDef::SingleValue(arg) => arg.validate(&single_value_arguments),
-            ArgumentDef::MultiValue(arg) => arg.validate(&multi_value_arguments)
+            ArgumentDef::MultiValue(arg) => arg.validate(&multi_value_arguments),
         }
     }
 }
-
 
 impl From<SingleValueArgumentDef> for ArgumentDef {
     fn from(item: SingleValueArgumentDef) -> Self {
@@ -655,7 +706,6 @@ impl From<MultiValueArgumentDef> for ArgumentDef {
         ArgumentDef::MultiValue(item)
     }
 }
-
 
 #[derive(Builder, Clone)]
 pub struct BasicSubCommandDef {
@@ -679,11 +729,7 @@ pub struct BasicSubCommandDef {
     subcommand: Option<Box<SubCommandDef>>,
     #[builder(default = "None")]
     subcommand_groups: Option<IndexMap<String, Group>>,
-       
 }
-
-
-
 
 #[derive(Builder, Clone)]
 pub struct SubCommandChainDef {
@@ -696,9 +742,8 @@ pub struct SubCommandChainDef {
     min_occurences: u64,
     #[builder(default = "None")]
     max_occurences: Option<u64>,
-    subcommand: Box<SubCommandDef>
+    subcommand: Box<SubCommandDef>,
 }
-
 
 #[derive(Builder, Clone)]
 pub struct SubCommandChainsDef {
@@ -706,7 +751,7 @@ pub struct SubCommandChainsDef {
     help: Option<String>,
     validators: Vec<SubCommandValidator>,
     arguments: Vec<ArgumentDef>,
-    subcommands: Vec<Box<SubCommandDef>>
+    subcommands: Vec<Box<SubCommandDef>>,
 }
 
 #[derive(Clone)]
@@ -714,9 +759,8 @@ pub enum SubCommandDef {
     BasicSubCommandDef(BasicSubCommandDef),
     SubCommandChainDef(SubCommandChainDef),
     SubCommandChainsDef(SubCommandChainsDef),
-    SubCommandEnumDef(Vec<Box<SubCommandDef>>)
+    SubCommandEnumDef(Vec<Box<SubCommandDef>>),
 }
-
 
 #[derive(Builder, Clone, Default)]
 pub struct AppDef {
@@ -738,38 +782,46 @@ pub struct AppDef {
     #[builder(default = "ArgumentDefs(vec![])")]
     arguments: ArgumentDefs,
     #[builder(default = "None")]
-    subcommand: Option<Box<SubCommandDef>>
+    subcommand: Option<Box<SubCommandDef>>,
+}
+
+#[derive(Debug)]
+enum ArgumentParserState<'a> {
+    ExpectAnything,
+    ExpectOptionValue(&'a OptionDef),
+    ExpectArgumentValue(&'a ArgumentDef, usize),
+    ExpectCommand,
+    ExpectEnd,
 }
 
 impl AppDef {
-
     pub fn get_arguments_part(&self) -> String {
         let mut s = String::new();
         for arg in &self.arguments.0 {
             match arg {
-                ArgumentDef::SingleValue(real_arg) => if real_arg.required {
-                    s.push_str(&format!(" {}", real_arg.name))
-                } else {
-                    s.push_str(&format!(" [{}]", real_arg.name))
-                },
+                ArgumentDef::SingleValue(real_arg) => {
+                    if real_arg.required {
+                        s.push_str(&format!(" {}", real_arg.name))
+                    } else {
+                        s.push_str(&format!(" [{}]", real_arg.name))
+                    }
+                }
                 ArgumentDef::MultiValue(real_arg) => {
                     match (&real_arg.min_occurences, &real_arg.max_occurences) {
-                        (v1, None) => {
-                            match v1 {
-                                0 => s.push_str(&format!(" [{}] [...]", real_arg.name)),
-                                _ => {
-                                    for _ in 0..*v1 { 
-                                        s.push_str(&format!(" {}", real_arg.name))
-                                    }
-                                    s.push_str(" [...]");
+                        (v1, None) => match v1 {
+                            0 => s.push_str(&format!(" [{}] [...]", real_arg.name)),
+                            _ => {
+                                for _ in 0..*v1 {
+                                    s.push_str(&format!(" {}", real_arg.name))
                                 }
+                                s.push_str(" [...]");
                             }
                         },
                         (v1, Some(v2)) => {
-                             for _ in 0..*v1 {
+                            for _ in 0..*v1 {
                                 s.push_str(&format!(" {}", real_arg.name))
                             }
-                           
+
                             if v1 < v2 {
                                 for _ in *v1..*v2 {
                                     s.push_str(&format!(" [{}]", real_arg.name))
@@ -783,16 +835,16 @@ impl AppDef {
         s
     }
 
-    pub fn print_usage(&self){
+    pub fn print_usage(&self) {
         self.print_version();
-        
+
         let mut usage = String::new();
-         if let Some(help) = &self.help {
+        if let Some(help) = &self.help {
             usage.push_str(help);
         }
         usage.push_str("\n\n");
         usage.push_str("USAGE:\n    ");
- 
+
         usage.push_str(&self.name.clone());
         if self.flags.0.len() > 0 {
             usage.push_str(" [FLAGS]");
@@ -810,7 +862,6 @@ impl AppDef {
         }
         usage.push_str("\n\n");
 
-
         if self.options.0.len() > 0 {
             usage.push_str("OPTIONS:\n");
             let mut visited_options = IndexSet::new();
@@ -820,16 +871,21 @@ impl AppDef {
                         usage.push_str(&format!("\n    {}\n\n", help));
                     }
                     match &group.items {
-                        None => { panic!("group is empty: {}", group.name); },
+                        None => {
+                            panic!("group is empty: {}", group.name);
+                        }
                         Some(items) => {
                             for option_name in items {
                                 visited_options.insert(option_name);
                                 match self.options.by_name(&option_name) {
                                     Some(option_def) => {
                                         usage.push_str(&option_def.get_help());
-                                    },
+                                    }
                                     None => {
-                                        panic!("Group {} doesn't have option {}", group.name, option_name);
+                                        panic!(
+                                            "Group {} doesn't have option {}",
+                                            group.name, option_name
+                                        );
                                     }
                                 }
                             }
@@ -846,7 +902,6 @@ impl AppDef {
             }
         }
 
-
         println!("{}", usage);
     }
 
@@ -855,201 +910,212 @@ impl AppDef {
     }
 
     pub fn parse_args(&self, args: &[&str]) -> Result<App, String> {
-        #[derive(Debug)]
-        enum State<'a> {
-            ExpectAnything,
-            ExpectOptionValue(&'a OptionDef),
-            ExpectArgumentValue(&'a ArgumentDef, usize),
-            ExpectCommand,
-            ExpectEnd
-        };
         let mut app = App::new(&self.name);
-         
-        let mut state = State::ExpectAnything;
+
+        let mut state = ArgumentParserState::ExpectAnything;
         let parser = parser::Parser::new(&args);
 
         for token in parser.iter() {
             match (&mut state, &token) {
-
-                (State::ExpectAnything, parser::Token::Short(ch)) => {
+                (ArgumentParserState::ExpectAnything, parser::Token::Short(ch)) => {
                     match self.flags.by_short(ch) {
-                        Some(ref flag_def) => {
-                            match flag_def {
-                                FlagDef::BooleanFlagDef(bf) => {
-                                    match app.boolean_flags.get(&bf.name) {
-                                        Some(_) => return Err("Invalid arguments".to_string()),
-                                        None => { app.boolean_flags.insert(bf.name.clone(), true);},
-                                    };
-                                    state = State::ExpectAnything;
-
-                                },
-                                FlagDef::CountedFlagDef(cf) => {
-                                    match app.counted_flags.entry(cf.name.clone()) {
-                                        Entry::Occupied(mut value) => { let v = value.get_mut(); *v+=1;},
-                                        Entry::Vacant(entry) => {entry.insert(1); }
+                        Some(ref flag_def) => match flag_def {
+                            FlagDef::BooleanFlagDef(bf) => {
+                                match app.boolean_flags.get(&bf.name) {
+                                    Some(_) => return Err("Invalid arguments".to_string()),
+                                    None => {
+                                        app.boolean_flags.insert(bf.name.clone(), true);
                                     }
-                                    state = State::ExpectAnything;
-                                },
-
+                                };
+                                state = ArgumentParserState::ExpectAnything;
+                            }
+                            FlagDef::CountedFlagDef(cf) => {
+                                match app.counted_flags.entry(cf.name.clone()) {
+                                    Entry::Occupied(mut value) => {
+                                        let v = value.get_mut();
+                                        *v += 1;
+                                    }
+                                    Entry::Vacant(entry) => {
+                                        entry.insert(1);
+                                    }
+                                }
+                                state = ArgumentParserState::ExpectAnything;
                             }
                         },
-                        None => {
-                            match self.options.by_short(ch) {
-                                Some(ref option_def) => {
-                                    state = State::ExpectOptionValue(option_def);
-                                },
-                                None => return Err("Invalid arguments".to_string())
+                        None => match self.options.by_short(ch) {
+                            Some(ref option_def) => {
+                                state = ArgumentParserState::ExpectOptionValue(option_def);
                             }
-                        
-                        }
+                            None => return Err("Invalid arguments".to_string()),
+                        },
                     }
-                },
-                (State::ExpectAnything, parser::Token::Long(param)) => {
+                }
+                (ArgumentParserState::ExpectAnything, parser::Token::Long(param)) => {
                     match self.flags.by_long(param) {
-                        Some(ref flag_def) => {
-                            match flag_def {
-                                FlagDef::BooleanFlagDef(bf) => {
-                                    match app.boolean_flags.get(&bf.name) {
-                                        Some(_) => return Err("Invalid arguments".to_string()),
-                                        None => { app.boolean_flags.insert(bf.name.clone(), true);},
-                                    };
-                                    state = State::ExpectAnything;
-
-                                },
-                                FlagDef::CountedFlagDef(cf) => {
-                                    match app.counted_flags.entry(cf.name.clone()) {
-                                        Entry::Occupied(mut value) => { let v = value.get_mut(); *v+=1;},
-                                        Entry::Vacant(entry) => {entry.insert(1); }
+                        Some(ref flag_def) => match flag_def {
+                            FlagDef::BooleanFlagDef(bf) => {
+                                match app.boolean_flags.get(&bf.name) {
+                                    Some(_) => return Err("Invalid arguments".to_string()),
+                                    None => {
+                                        app.boolean_flags.insert(bf.name.clone(), true);
                                     }
-                                    state = State::ExpectAnything;
-                                },
-
+                                };
+                                state = ArgumentParserState::ExpectAnything;
+                            }
+                            FlagDef::CountedFlagDef(cf) => {
+                                match app.counted_flags.entry(cf.name.clone()) {
+                                    Entry::Occupied(mut value) => {
+                                        let v = value.get_mut();
+                                        *v += 1;
+                                    }
+                                    Entry::Vacant(entry) => {
+                                        entry.insert(1);
+                                    }
+                                }
+                                state = ArgumentParserState::ExpectAnything;
                             }
                         },
-                        None => {
-                            match self.options.by_long(param) {
-                                Some(ref option_def) => {
-                                    state = State::ExpectOptionValue(option_def);
-                                },
-                                None => return Err("Invalid arguments".to_string())
+                        None => match self.options.by_long(param) {
+                            Some(ref option_def) => {
+                                state = ArgumentParserState::ExpectOptionValue(option_def);
                             }
-                        
+                            None => return Err("Invalid arguments".to_string()),
+                        },
+                    }
+                }
+
+                (
+                    ArgumentParserState::ExpectOptionValue(ref option_def),
+                    parser::Token::Value(value),
+                ) => match option_def {
+                    OptionDef::SingleValue(svod) => {
+                        match app.single_value_arguments.get(&svod.name) {
+                            Some(_) => return Err("Invalid arguments".to_string()),
+                            None => {
+                                app.single_value_arguments
+                                    .insert(svod.name.clone(), value.to_string());
+                                state = ArgumentParserState::ExpectAnything;
+                            }
                         }
                     }
-                },
+                    OptionDef::MultiValue(mvod) => {
+                        match app.multi_value_arguments.entry(mvod.name.clone()) {
+                            Entry::Occupied(mut entry) => {
+                                let v = entry.get_mut();
+                                v.push(value.to_string());
+                            }
+                            Entry::Vacant(entry) => {
+                                entry.insert(vec![value.to_string()]);
+                            }
+                        }
 
-                (State::ExpectOptionValue(ref option_def), parser::Token::Value(value)) => {
-                    match option_def {
-                        OptionDef::SingleValue(svod) => {
-                            match app.single_value_arguments.get(&svod.name) {
-                                Some(_) => return Err("Invalid arguments".to_string()),
-                                None => {
-                                    app.single_value_arguments.insert(svod.name.clone(), value.to_string());
-                                    state = State::ExpectAnything;
-                                }
-                            }
-                        },
-                        OptionDef::MultiValue(mvod) => {
-                            match app.multi_value_arguments.entry(mvod.name.clone()) {
-                                Entry::Occupied(mut entry) => {
-                                    let v = entry.get_mut();
-                                    v.push(value.to_string());
-                                },
-                                Entry::Vacant(entry) => {
-                                    entry.insert(vec![value.to_string()]);
-                                }
-                            }
-                            
-                             state = State::ExpectAnything;
-                        },
+                        state = ArgumentParserState::ExpectAnything;
                     }
                 },
 
-                (State::ExpectAnything, parser::Token::Value(value)) => {
+                (ArgumentParserState::ExpectAnything, parser::Token::Value(value)) => {
                     if self.arguments.0.len() > 0 {
                         let arg_def = &self.arguments.0[0];
                         match arg_def {
                             ArgumentDef::SingleValue(svad) => {
-                                app.single_value_arguments.insert(svad.name.clone(), value.to_string());
+                                app.single_value_arguments
+                                    .insert(svad.name.clone(), value.to_string());
                                 if self.arguments.0.len() == 1 {
                                     if self.subcommand.is_some() {
-                                        state = State::ExpectCommand;
+                                        state = ArgumentParserState::ExpectCommand;
                                     } else {
-                                        state = State::ExpectEnd;
+                                        state = ArgumentParserState::ExpectEnd;
                                     }
                                 } else {
-                                    state = State::ExpectArgumentValue(&self.arguments.0[1], 1);
+                                    state = ArgumentParserState::ExpectArgumentValue(
+                                        &self.arguments.0[1],
+                                        1,
+                                    );
                                 }
-                            },
+                            }
                             ArgumentDef::MultiValue(mvad) => {
-                                app.multi_value_arguments.insert(mvad.name.clone(), vec![value.to_string()]);
+                                app.multi_value_arguments
+                                    .insert(mvad.name.clone(), vec![value.to_string()]);
 
                                 if mvad.max_occurences == Some(1) {
                                     if self.subcommand.is_some() {
-                                        state = State::ExpectCommand;
+                                        state = ArgumentParserState::ExpectCommand;
                                     } else {
-                                        state = State::ExpectEnd;
+                                        state = ArgumentParserState::ExpectEnd;
                                     }
                                 } else {
-                                    state = State::ExpectArgumentValue(&self.arguments.0[1], 1);
+                                    state = ArgumentParserState::ExpectArgumentValue(
+                                        &self.arguments.0[1],
+                                        1,
+                                    );
                                 }
-                            },
+                            }
                         }
                     }
-                },
-                
-                (State::ExpectArgumentValue(arg_def, arg_idx), parser::Token::Value(value)) => {
-                    match arg_def {
-                        ArgumentDef::SingleValue(svad) => {
-                            app.single_value_arguments.insert(svad.name.clone(), value.to_string());
-                            if *arg_idx + 1 == self.arguments.0.len() {
-                                if self.subcommand.is_some() {
-                                    state = State::ExpectCommand;
-                                } else {
-                                    state = State::ExpectEnd;
-                                }
+                }
+
+                (
+                    ArgumentParserState::ExpectArgumentValue(arg_def, arg_idx),
+                    parser::Token::Value(value),
+                ) => match arg_def {
+                    ArgumentDef::SingleValue(svad) => {
+                        app.single_value_arguments
+                            .insert(svad.name.clone(), value.to_string());
+                        if *arg_idx + 1 == self.arguments.0.len() {
+                            if self.subcommand.is_some() {
+                                state = ArgumentParserState::ExpectCommand;
                             } else {
-                                state = State::ExpectArgumentValue(&self.arguments.0[*arg_idx + 1], *arg_idx + 1);
+                                state = ArgumentParserState::ExpectEnd;
                             }
-                        },
-                        ArgumentDef::MultiValue(mvad) => {
-                            
-                            let value_cnt = match app.multi_value_arguments.entry(mvad.name.clone()) {
-                                Entry::Occupied(mut entry) => {
-                                    let values = entry.get_mut();
-                                    values.push(value.to_string());
-                                    values.len()
-                                },
-                                Entry::Vacant(entry) => {
-                                    entry.insert(vec![value.to_string()]);
-                                    1
-                                }
-                            };
-                            if let Some(max) = mvad.max_occurences {
-                                if value_cnt == max as usize {
-                                    if *arg_idx + 1 == self.arguments.0.len() {
-                                        if self.subcommand.is_some() {
-                                            state = State::ExpectCommand;
-                                        } else {
-                                            state = State::ExpectEnd;
-                                        }
+                        } else {
+                            state = ArgumentParserState::ExpectArgumentValue(
+                                &self.arguments.0[*arg_idx + 1],
+                                *arg_idx + 1,
+                            );
+                        }
+                    }
+                    ArgumentDef::MultiValue(mvad) => {
+                        let value_cnt = match app.multi_value_arguments.entry(mvad.name.clone()) {
+                            Entry::Occupied(mut entry) => {
+                                let values = entry.get_mut();
+                                values.push(value.to_string());
+                                values.len()
+                            }
+                            Entry::Vacant(entry) => {
+                                entry.insert(vec![value.to_string()]);
+                                1
+                            }
+                        };
+                        if let Some(max) = mvad.max_occurences {
+                            if value_cnt == max as usize {
+                                if *arg_idx + 1 == self.arguments.0.len() {
+                                    if self.subcommand.is_some() {
+                                        state = ArgumentParserState::ExpectCommand;
                                     } else {
-                                        state = State::ExpectArgumentValue(&self.arguments.0[*arg_idx + 1], *arg_idx + 1);
+                                        state = ArgumentParserState::ExpectEnd;
                                     }
+                                } else {
+                                    state = ArgumentParserState::ExpectArgumentValue(
+                                        &self.arguments.0[*arg_idx + 1],
+                                        *arg_idx + 1,
+                                    );
                                 }
                             }
                         }
                     }
                 },
-                (State::ExpectAnything, parser::Token::End) | (State::ExpectEnd, parser::Token::End) => {
+                (ArgumentParserState::ExpectAnything, parser::Token::End)
+                | (ArgumentParserState::ExpectEnd, parser::Token::End) => {
                     //TODO: validate arguments
                     self.validate(&app)?;
                     return Ok(app);
-                },
-                (state, token) => return Err(format!("Invalid arguments: {:?}, {:?}", state, token ))
+                }
+                (state, token) => {
+                    return Err(format!("Invalid arguments: {:?}, {:?}", state, token))
+                }
             }
-        };
-        
+        }
+
         Err("err".to_string())
     }
 
@@ -1064,10 +1130,12 @@ impl AppDef {
     }
 
     fn validate(&self, app: &App) -> Result<(), String> {
-
-        self.flags.validate(&app.boolean_flags, &app.counted_flags)?;
-        self.options.validate(&app.single_value_options, &app.multi_value_options)?;
-        self.arguments.validate(&app.single_value_arguments, &app.multi_value_arguments)?;
+        self.flags
+            .validate(&app.boolean_flags, &app.counted_flags)?;
+        self.options
+            .validate(&app.single_value_options, &app.multi_value_options)?;
+        self.arguments
+            .validate(&app.single_value_arguments, &app.multi_value_arguments)?;
 
         for validator in &self.validators {
             validator(&app)?;
@@ -1075,28 +1143,32 @@ impl AppDef {
 
         Ok(())
     }
-
 }
 
 impl AppDefBuilder {
-
     pub fn new(name: String) -> AppDefBuilder {
         let mut app_def_builder = AppDefBuilder::default();
-        app_def_builder.add_flag(
-            FlagDef::BooleanFlagDef(
-                BooleanFlagDefBuilder::new("verbose".to_string(), Some('V'), Some("verbose".to_string()))
-                .build()
-                .unwrap()
+        app_def_builder.add_flag(FlagDef::BooleanFlagDef(
+            BooleanFlagDefBuilder::new(
+                "verbose".to_string(),
+                Some('V'),
+                Some("verbose".to_string()),
             )
-        );
+            .build()
+            .unwrap(),
+        ));
         app_def_builder.name(name);
         app_def_builder
     }
 
     pub fn add_flag(&mut self, flag_def: FlagDef) -> &mut Self {
         match &mut self.flags {
-            Some(ref mut flag_defs) => { flag_defs.add_flag(flag_def); },
-            None => { self.flags = Some(FlagDefs(vec![flag_def])); }
+            Some(ref mut flag_defs) => {
+                flag_defs.add_flag(flag_def);
+            }
+            None => {
+                self.flags = Some(FlagDefs(vec![flag_def]));
+            }
         }
         self
     }
@@ -1108,7 +1180,7 @@ impl AppDefBuilder {
                 hm.insert(group.name.clone(), group);
                 self.flag_groups = Some(Some(hm));
                 Ok(self)
-            },
+            }
             Some(Some(ref mut hm)) => {
                 hm.insert(group.name.clone(), group);
                 Ok(self)
@@ -1123,7 +1195,7 @@ impl AppDefBuilder {
                 hm.insert(group.name.clone(), group);
                 self.option_groups = Some(Some(hm));
                 Ok(self)
-            },
+            }
             Some(Some(ref mut hm)) => {
                 hm.insert(group.name.clone(), group);
                 Ok(self)
@@ -1131,7 +1203,10 @@ impl AppDefBuilder {
         }
     }
 
-    pub fn add_option_groups(&mut self, groups: Vec<(Group, Vec<OptionDef>)>) -> Result<&mut Self, String> {
+    pub fn add_option_groups(
+        &mut self,
+        groups: Vec<(Group, Vec<OptionDef>)>,
+    ) -> Result<&mut Self, String> {
         for (mut group, defs) in groups {
             match &mut self.option_groups {
                 None | Some(None) => {
@@ -1142,8 +1217,7 @@ impl AppDefBuilder {
                     }
                     im.insert(group.name.clone(), group);
                     self.option_groups = Some(Some(im));
-
-                },
+                }
                 Some(Some(ref mut im)) => {
                     for def in &defs {
                         group.add_item(&def.name());
@@ -1158,51 +1232,51 @@ impl AppDefBuilder {
         Ok(self)
     }
 
-
     pub fn add_option(&mut self, option_def: OptionDef) -> &mut Self {
         match &mut self.options {
             Some(v) => v.0.push(option_def),
-            None => self.options = Some(OptionDefs(vec![option_def]))
+            None => self.options = Some(OptionDefs(vec![option_def])),
         };
         self
     }
 
-    pub fn add_option_to_group(&mut self, group_name: &str, option_def: OptionDef) -> Result<&mut Self, String> {
-    if let Some(Some(ref mut hm)) = self.option_groups {
-
-        match hm.entry(group_name.to_string()){
-            Entry::Occupied(mut g)  => {
-                let mut group = g.get_mut();
-                match &mut group.items {
-                    None => {
-                        let mut hs = IndexSet::new();
-                        let s:String = (&option_def.name()).clone();
-                        hs.insert(s);
-                        group.items = Some(hs);
-                    },
-                    Some(v) => {
-                        v.insert(option_def.name().clone());
+    pub fn add_option_to_group(
+        &mut self,
+        group_name: &str,
+        option_def: OptionDef,
+    ) -> Result<&mut Self, String> {
+        if let Some(Some(ref mut hm)) = self.option_groups {
+            match hm.entry(group_name.to_string()) {
+                Entry::Occupied(mut g) => {
+                    let mut group = g.get_mut();
+                    match &mut group.items {
+                        None => {
+                            let mut hs = IndexSet::new();
+                            let s: String = (&option_def.name()).clone();
+                            hs.insert(s);
+                            group.items = Some(hs);
+                        }
+                        Some(v) => {
+                            v.insert(option_def.name().clone());
+                        }
                     }
                 }
-            },
-            Entry::Vacant(_)  => {},
+                Entry::Vacant(_) => {}
+            }
+        } else {
+            return Err(format!("group does not exist: {}", group_name));
         }
-
-    } else {
-        return Err(format!("group does not exist: {}", group_name))
-    }
         match &mut self.options {
             Some(v) => v.0.push(option_def),
-            None => self.options = Some(OptionDefs(vec![option_def]))
+            None => self.options = Some(OptionDefs(vec![option_def])),
         };
         Ok(self)
     }
 
-
     pub fn add_argument(&mut self, argument_def: ArgumentDef) -> &mut Self {
         match &mut self.arguments {
             Some(v) => v.0.push(argument_def),
-            None => self.arguments = Some(ArgumentDefs(vec![argument_def]))
+            None => self.arguments = Some(ArgumentDefs(vec![argument_def])),
         };
         self
     }

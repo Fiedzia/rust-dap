@@ -5,20 +5,20 @@ pub enum Token<'a> {
     Value(&'a str),
     PositionalSeparator,
     Error(String, Position),
-    End
+    End,
 }
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Position {
     argument: usize,
-    char_in_argument:u32,
+    char_in_argument: u32,
 }
 
 impl Position {
     pub fn new(argument: usize) -> Position {
         Position {
             argument,
-            char_in_argument: 0
+            char_in_argument: 0,
         }
     }
     pub fn new_detailed(argument: usize, char_in_argument: u32) -> Position {
@@ -35,7 +35,7 @@ pub struct TokenStream<'a> {
     state: State,
 }
 
-#[derive(Debug,PartialEq)]
+#[derive(Debug, PartialEq)]
 enum State {
     Iterating,
     EndToken,
@@ -43,14 +43,16 @@ enum State {
     Done,
 }
 
-
-impl <'a>TokenStream<'a> {
-
+impl<'a> TokenStream<'a> {
     pub fn new(args: &'a [&'a str]) -> TokenStream<'a> {
         TokenStream {
             args: args,
             position: Position::new(0),
-            state: if args.len() == 0 { State::EndToken } else { State::Iterating }
+            state: if args.len() == 0 {
+                State::EndToken
+            } else {
+                State::Iterating
+            },
         }
     }
 
@@ -64,10 +66,9 @@ impl <'a>TokenStream<'a> {
     }
 }
 
-impl <'a>Iterator for TokenStream<'a> {
-    type Item=Token<'a>;
+impl<'a> Iterator for TokenStream<'a> {
+    type Item = Token<'a>;
     fn next(&mut self) -> Option<Self::Item> {
-
         if self.state == State::Error || self.state == State::Done {
             None
         } else if self.state == State::EndToken {
@@ -83,17 +84,25 @@ impl <'a>Iterator for TokenStream<'a> {
                 self.next_argument();
                 Some(Token::Long(&arg[2..]))
             } else if arg.starts_with('-') {
-
                 let char_len = arg.chars().count();
                 if char_len == 1 {
                     self.state = State::Error;
-                    return Some(Token::Error("invalid value".to_string(), self.position.clone()))
+                    return Some(Token::Error(
+                        "invalid value".to_string(),
+                        self.position.clone(),
+                    ));
                 } else {
                     self.position.char_in_argument += 1;
-                    let chr = arg.chars().nth(self.position.char_in_argument as usize).unwrap();
+                    let chr = arg
+                        .chars()
+                        .nth(self.position.char_in_argument as usize)
+                        .unwrap();
                     if chr == '-' || chr == ' ' {
                         self.state = State::Error;
-                        return Some(Token::Error("invalid character".to_string(), self.position.clone()))
+                        return Some(Token::Error(
+                            "invalid character".to_string(),
+                            self.position.clone(),
+                        ));
                     }
                     let result = Some(Token::Short(chr));
                     if self.position.char_in_argument as usize >= char_len - 1 {
@@ -111,14 +120,12 @@ impl <'a>Iterator for TokenStream<'a> {
 
 #[derive(Debug)]
 pub struct Parser<'a> {
-   args: &'a [&'a str], 
+    args: &'a [&'a str],
 }
 
-impl <'a>Parser<'a> {
+impl<'a> Parser<'a> {
     pub fn new(args: &'a [&'a str]) -> Parser {
-        Parser {
-            args: args
-        }
+        Parser { args: args }
     }
 
     pub fn iter(&self) -> TokenStream {
@@ -128,11 +135,7 @@ impl <'a>Parser<'a> {
 
 #[cfg(test)]
 mod tests {
-    use super::{
-        Token,
-        Parser,
-        Position
-    };
+    use super::{Parser, Position, Token};
     #[test]
     fn test_parser() {
         let parser = Parser::new(&[]);
@@ -149,15 +152,38 @@ mod tests {
 
         let parser = Parser::new(&["-s", "--long", "value"]);
         let t: Vec<Token> = parser.iter().collect();
-        assert_eq!(t, vec![Token::Short('s'), Token::Long("long"), Token::Value("value"), Token::End]);
+        assert_eq!(
+            t,
+            vec![
+                Token::Short('s'),
+                Token::Long("long"),
+                Token::Value("value"),
+                Token::End
+            ]
+        );
 
         //test error handling
         let parser = Parser::new(&["-v "]);
         let t: Vec<Token> = parser.iter().collect();
-        assert_eq!(t, vec![Token::Short('v'), Token::Error("invalid character".to_string(), Position::new_detailed(0, 2))]);
+        assert_eq!(
+            t,
+            vec![
+                Token::Short('v'),
+                Token::Error(
+                    "invalid character".to_string(),
+                    Position::new_detailed(0, 2)
+                )
+            ]
+        );
 
         let parser = Parser::new(&["- "]);
         let t: Vec<Token> = parser.iter().collect();
-        assert_eq!(t, vec![Token::Error("invalid character".to_string(), Position::new_detailed(0, 1))]);
+        assert_eq!(
+            t,
+            vec![Token::Error(
+                "invalid character".to_string(),
+                Position::new_detailed(0, 1)
+            )]
+        );
     }
 }
